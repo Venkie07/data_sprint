@@ -190,24 +190,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerFormBtn = document.getElementById('register-btn');
     const passwordMsg = document.getElementById('password-msg');
 
-    const validatePasswords = () => {
-        if (password.value === confirmPassword.value && password.value !== '') {
+    const checkFormValidity = () => {
+        const isMember3Visible = document.getElementById('member-3-section').style.display === 'block';
+        const allVisibleInputs = document.querySelectorAll('#register-form input[required]:not([readonly]), #register-form select[required]');
+
+        let allFilled = true;
+        allVisibleInputs.forEach(input => {
+            if (input.value.trim() === '') {
+                allFilled = false;
+            }
+        });
+
+        // Additional check: If Member 1, 2, or 3 are visible, check their specific inputs too
+        // (Since we make them required dynamically in the button click logic)
+
+        const passwordsMatch = password.value === confirmPassword.value && password.value !== '';
+
+        if (isMember3Visible && allFilled && passwordsMatch) {
             registerFormBtn.disabled = false;
-            passwordMsg.innerText = 'Passwords match';
-            passwordMsg.style.color = 'var(--p-400)';
         } else {
             registerFormBtn.disabled = true;
-            if (confirmPassword.value !== '') {
-                passwordMsg.innerText = 'Passwords do not match';
-                passwordMsg.style.color = '#ef4444';
+        }
+
+        // Update password match message color
+        if (confirmPassword.value !== '') {
+            if (passwordsMatch) {
+                passwordMsg.innerText = 'All conditions met: Session ready';
+                passwordMsg.style.color = 'var(--p-400)';
             } else {
-                passwordMsg.innerText = '';
+                passwordMsg.innerText = password.value === confirmPassword.value ? 'Complete all member details' : 'Passwords do not match';
+                passwordMsg.style.color = '#ef4444';
             }
         }
     };
 
+    const validatePasswords = () => {
+        checkFormValidity();
+    };
+
     password.addEventListener('input', validatePasswords);
     confirmPassword.addEventListener('input', validatePasswords);
+
+    // Add event listeners to all inputs in registration form for live validation
+    const registerInputs = document.querySelectorAll('#register-form input, #register-form select');
+    registerInputs.forEach(input => {
+        input.addEventListener('input', checkFormValidity);
+    });
 
     // Auto-generate Username from Lead Email
     const leadEmail = document.getElementById('lead-email');
@@ -317,6 +345,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.reveal').forEach(el => {
         revealObserver.observe(el);
+    });
+
+    // Dynamic Member Addition Logic
+    const addMemberButtons = document.querySelectorAll('.add-member-btn');
+    addMemberButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-target');
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                // Hide the current button after click
+                btn.closest('.add-member-container').style.display = 'none';
+
+                // If it's the last section, scroll to it
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // Update required status for inputs in the revealed section
+                const inputs = targetSection.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    input.required = true;
+                });
+
+                // Re-check validity since more fields are now required
+                checkFormValidity();
+            }
+        });
     });
 
     console.log('DATA SPRINT 3.0 Initialized');
