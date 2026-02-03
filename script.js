@@ -1,4 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Custom Notification System ---
+    const showNotification = (message, type = 'info') => {
+        const container = document.getElementById('notification-container');
+        if (!container) return;
+
+        const notif = document.createElement('div');
+        notif.className = `notification ${type}`;
+        notif.innerHTML = `<span>${message}</span>`;
+
+        container.appendChild(notif);
+
+        setTimeout(() => {
+            notif.classList.add('fade-out');
+            setTimeout(() => notif.remove(), 500);
+        }, 3000);
+    };
+
     // Preloader
     const preloader = document.getElementById('preloader');
     if (preloader) {
@@ -71,15 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Custom Cursor Tracking
     const cursor = document.querySelector('.cursor-laser');
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-    if (cursor && !isTouchDevice) {
+    if (cursor) {
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX - 10 + 'px';
             cursor.style.top = e.clientY - 10 + 'px';
         });
-    } else if (cursor) {
-        cursor.style.display = 'none';
     }
 
     // Auth Modal Logic
@@ -89,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerBtn = document.querySelector('.btn-register');
     const closeModal = document.querySelector('.close-modal');
 
-    const openModal = (type) => {
+    let openModal = (type) => {
         modalTitle.innerText = type.toUpperCase();
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -163,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 otpSection.style.display = 'block';
                 requestOtpBtn.style.display = 'none';
             } else {
-                alert('Please enter your User ID first.');
+                showNotification('Please enter your User ID first.', 'warning');
             }
         });
     }
@@ -184,72 +197,153 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Password Validation Logic
+    // --- Multi-step Registration Form Logic ---
+    let currentStep = 0;
+    const formSteps = document.querySelectorAll('.form-step');
+    const stepIndicators = document.querySelectorAll('.step-indicator');
+    const progressFill = document.getElementById('reg-progress-fill');
+
+    const showStep = (stepIdx) => {
+        formSteps.forEach((step, idx) => {
+            step.classList.toggle('active', idx === stepIdx);
+        });
+
+        stepIndicators.forEach((indicator, idx) => {
+            indicator.classList.toggle('active', idx === stepIdx);
+            indicator.classList.toggle('completed', idx < stepIdx);
+        });
+
+        const progressPercent = ((stepIdx + 1) / formSteps.length) * 100;
+        if (progressFill) progressFill.style.width = `${progressPercent}%`;
+
+        currentStep = stepIdx;
+    };
+
+    // Navigation Buttons Handle
+    document.querySelectorAll('.next-step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentStep < formSteps.length - 1) {
+                showStep(currentStep + 1);
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                showStep(currentStep - 1);
+            }
+        });
+    });
+
+    // OTP Simulation Logic
+    const sendOtpBtn = document.getElementById('send-otp-btn');
+    const verifyOtpBtn = document.getElementById('verify-otp-btn');
+    const otpVerifyBox = document.getElementById('otp-verify-box');
+    const otpInput = document.getElementById('reg-otp-input');
+    const otpMsg = document.getElementById('otp-msg');
+    const nextToStep2Btn = document.getElementById('to-step-2');
+
+    if (sendOtpBtn) {
+        sendOtpBtn.addEventListener('click', () => {
+            const email = document.getElementById('lead-email').value;
+            if (email.includes('@')) {
+                otpVerifyBox.style.display = 'block';
+                sendOtpBtn.innerText = 'RESEND OTP';
+                otpMsg.innerText = 'OTP sent to ' + email;
+                otpMsg.style.color = 'var(--p-400)';
+            } else {
+                showNotification('Please enter a valid email address.', 'warning');
+            }
+        });
+    }
+
+    if (verifyOtpBtn) {
+        verifyOtpBtn.addEventListener('click', () => {
+            const code = otpInput.value;
+            if (code === '123456') { // Static simulation
+                otpMsg.innerText = 'Email Verified Successfully!';
+                otpMsg.style.color = '#4ade80';
+                verifyOtpBtn.disabled = true;
+                otpInput.disabled = true;
+                nextToStep2Btn.disabled = false;
+                sendOtpBtn.style.display = 'none';
+            } else {
+                otpMsg.innerText = 'Invalid OTP.';
+                otpMsg.style.color = '#ef4444';
+            }
+        });
+    }
+
+    // Passwords & Final Register Validation
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirm-password');
     const registerFormBtn = document.getElementById('register-btn');
     const passwordMsg = document.getElementById('password-msg');
 
-    const checkFormValidity = () => {
-        const isMember3Visible = document.getElementById('member-3-section').style.display === 'block';
-        const allVisibleInputs = document.querySelectorAll('#register-form input[required]:not([readonly]), #register-form select[required]');
-
+    const checkFinalValidity = () => {
+        const allRequiredFields = document.querySelectorAll('#register-form [required]');
         let allFilled = true;
-        allVisibleInputs.forEach(input => {
-            if (input.value.trim() === '') {
-                allFilled = false;
-            }
+        allRequiredFields.forEach(field => {
+            if (!field.value.trim()) allFilled = false;
         });
-
-        // Additional check: If Member 1, 2, or 3 are visible, check their specific inputs too
-        // (Since we make them required dynamically in the button click logic)
 
         const passwordsMatch = password.value === confirmPassword.value && password.value !== '';
 
-        if (isMember3Visible && allFilled && passwordsMatch) {
+        if (allFilled && passwordsMatch) {
             registerFormBtn.disabled = false;
         } else {
             registerFormBtn.disabled = true;
         }
 
-        // Update password match message color
-        if (confirmPassword.value !== '') {
+        if (confirmPassword.value) {
             if (passwordsMatch) {
-                passwordMsg.innerText = 'All conditions met: Session ready';
-                passwordMsg.style.color = 'var(--p-400)';
+                passwordMsg.innerText = 'Passwords match. Session ready.';
+                passwordMsg.style.color = '#4ade80';
             } else {
-                passwordMsg.innerText = password.value === confirmPassword.value ? 'Complete all member details' : 'Passwords do not match';
+                passwordMsg.innerText = 'Passwords do not match.';
                 passwordMsg.style.color = '#ef4444';
             }
         }
     };
 
-    const validatePasswords = () => {
-        checkFormValidity();
-    };
-
-    password.addEventListener('input', validatePasswords);
-    confirmPassword.addEventListener('input', validatePasswords);
-
-    // Add event listeners to all inputs in registration form for live validation
-    const registerInputs = document.querySelectorAll('#register-form input, #register-form select');
-    registerInputs.forEach(input => {
-        input.addEventListener('input', checkFormValidity);
+    [password, confirmPassword].forEach(el => el?.addEventListener('input', checkFinalValidity));
+    document.querySelectorAll('#register-form input, #register-form select').forEach(el => {
+        el.addEventListener('input', checkFinalValidity);
     });
+
+    // Reset Form on Open
+    const originalOpenModal = openModal;
+    openModal = (type) => {
+        originalOpenModal(type);
+        if (type === 'register') {
+            showStep(0);
+            otpVerifyBox.style.display = 'none';
+            nextToStep2Btn.disabled = true;
+            otpInput.value = '';
+            otpInput.disabled = false;
+            verifyOtpBtn.disabled = false;
+            sendOtpBtn.style.display = 'inline-block';
+            sendOtpBtn.innerText = 'VERIFY';
+            otpMsg.innerText = '';
+        }
+    };
 
     // Auto-generate Username from Lead Email
     const leadEmail = document.getElementById('lead-email');
     const usernameField = document.getElementById('username');
 
-    leadEmail.addEventListener('input', () => {
-        const email = leadEmail.value;
-        if (email.includes('@')) {
-            const username = email.split('@')[0] + '@datasprint';
-            usernameField.value = username;
-        } else {
-            usernameField.value = '';
-        }
-    });
+    if (leadEmail && usernameField) {
+        leadEmail.addEventListener('input', () => {
+            const email = leadEmail.value;
+            if (email.includes('@')) {
+                const username = email.split('@')[0] + '@datasprint';
+                usernameField.value = username;
+            } else {
+                usernameField.value = '';
+            }
+        });
+    }
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) hideModal();
@@ -345,32 +439,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.reveal').forEach(el => {
         revealObserver.observe(el);
-    });
-
-    // Dynamic Member Addition Logic
-    const addMemberButtons = document.querySelectorAll('.add-member-btn');
-    addMemberButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const targetId = btn.getAttribute('data-target');
-            const targetSection = document.getElementById(targetId);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-                // Hide the current button after click
-                btn.closest('.add-member-container').style.display = 'none';
-
-                // If it's the last section, scroll to it
-                targetSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-                // Update required status for inputs in the revealed section
-                const inputs = targetSection.querySelectorAll('input, select');
-                inputs.forEach(input => {
-                    input.required = true;
-                });
-
-                // Re-check validity since more fields are now required
-                checkFormValidity();
-            }
-        });
     });
 
     console.log('DATA SPRINT 3.0 Initialized');
@@ -537,3 +605,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+

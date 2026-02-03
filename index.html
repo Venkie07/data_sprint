@@ -16,6 +16,7 @@
 
   <div class="cursor-laser"></div>
   <div class="scanline"></div>
+  <div id="notification-container"></div>
 
   <nav>
     <div class="container nav-content">
@@ -398,38 +399,64 @@
         </form>
 
         <form id="register-form" style="display: none;">
-          <!-- Team Info -->
-          <div class="input-group">
-            <label>TEAM_NAME</label>
-            <input type="text" required placeholder="Enter team name">
+          <!-- Progress Bar -->
+          <div class="registration-progress">
+            <div class="progress-bar-fill" id="reg-progress-fill" style="width: 25%;"></div>
+            <div class="progress-steps">
+              <div class="step-indicator active">1</div>
+              <div class="step-indicator">2</div>
+              <div class="step-indicator">3</div>
+              <div class="step-indicator">4</div>
+            </div>
           </div>
 
-          <!-- Team Lead -->
-          <div id="team-lead-section">
+          <!-- Step 1: Team & Lead Info -->
+          <div class="form-step active" id="step-1">
+            <div class="input-group">
+              <label>TEAM_NAME</label>
+              <input type="text" required placeholder="Enter team name" name="team_name">
+            </div>
+
             <h4 class="section-titl">TEAM_LEAD_DETAILS</h4>
             <div class="input-group">
               <label>FULL_NAME</label>
-              <input type="text" required placeholder="Lead name">
+              <input type="text" required placeholder="Lead name" name="lead_name">
             </div>
             <div class="input-group">
               <label>PHONE_NUMBER</label>
-              <input type="tel" required placeholder="+91 XXXX XXXX XX">
+              <input type="tel" required placeholder="+91 XXXX XXXX XX" name="lead_phone">
             </div>
-            <div class="input-group">
+            <div class="input-group email-verify-group">
               <label>EMAIL_ADDRESS</label>
-              <input type="email" id="lead-email" required placeholder="lead@example.com">
+              <div class="input-with-button">
+                <input type="email" id="lead-email" required placeholder="lead@example.com" name="lead_email">
+                <button type="button" id="send-otp-btn" class="verify-btn">VERIFY</button>
+              </div>
             </div>
+
+            <!-- OTP Box (Hidden initially) -->
+            <div id="otp-verify-box" class="otp-box" style="display: none;">
+              <div class="input-group">
+                <label>ENTER OTP SENT TO YOUR EMAIL</label>
+                <div class="input-with-button">
+                  <input type="text" id="reg-otp-input" maxlength="6" placeholder="XXXXXX">
+                  <button type="button" id="verify-otp-btn" class="verify-btn">VERIFY OTP</button>
+                </div>
+                <small id="otp-msg" style="display: block; margin-top: 0.5rem;"></small>
+              </div>
+            </div>
+
             <div class="input-group">
               <label>COLLEGE_NAME</label>
-              <input type="text" required placeholder="Institution Name">
+              <input type="text" required placeholder="Institution Name" name="lead_college">
             </div>
             <div class="input-group">
               <label>DEPARTMENT</label>
-              <input type="text" required placeholder="e.g. AI & DS">
+              <input type="text" required placeholder="e.g. AI & DS" name="lead_dept">
             </div>
             <div class="input-group" style="margin-bottom: 2rem;">
               <label>YEAR</label>
-              <select required>
+              <select required name="lead_year">
                 <option value="" disabled selected>Select Year</option>
                 <option value="1">1st Year</option>
                 <option value="2">2nd Year</option>
@@ -437,39 +464,38 @@
                 <option value="4">4th Year</option>
               </select>
             </div>
-            <div class="add-member-container">
-              <button type="button" class="add-member-btn" data-target="member-1-section">
-                <span>+</span> Add Member 1
-              </button>
+
+            <div class="form-nav">
+              <button type="button" class="next-step-btn" id="to-step-2" disabled>NEXT</button>
             </div>
           </div>
 
-          <!-- Member 1 -->
-          <div id="member-1-section" class="member-extra-section" style="display: none;">
+          <!-- Step 2: Member 1 -->
+          <div class="form-step" id="step-2">
             <h4 class="section-titl">MEMBER_1_DETAILS</h4>
             <div class="input-group">
               <label>FULL_NAME</label>
-              <input type="text" placeholder="Member 1 name">
+              <input type="text" placeholder="Member 1 name" name="m1_name">
             </div>
             <div class="input-group">
               <label>PHONE_NUMBER</label>
-              <input type="tel" placeholder="+91 XXXX XXXX XX">
+              <input type="tel" placeholder="+91 XXXX XXXX XX" name="m1_phone">
             </div>
             <div class="input-group">
               <label>EMAIL_ADDRESS</label>
-              <input type="email" placeholder="member1@example.com">
+              <input type="email" placeholder="member1@example.com" name="m1_email">
             </div>
             <div class="input-group">
               <label>COLLEGE_NAME</label>
-              <input type="text" placeholder="Institution Name">
+              <input type="text" placeholder="Institution Name" name="m1_college">
             </div>
             <div class="input-group">
               <label>DEPARTMENT</label>
-              <input type="text" placeholder="e.g. AI & DS">
+              <input type="text" placeholder="e.g. AI & DS" name="m1_dept">
             </div>
             <div class="input-group" style="margin-bottom: 2rem;">
               <label>YEAR</label>
-              <select>
+              <select name="m1_year">
                 <option value="" disabled selected>Select Year</option>
                 <option value="1">1st Year</option>
                 <option value="2">2nd Year</option>
@@ -477,39 +503,38 @@
                 <option value="4">4th Year</option>
               </select>
             </div>
-            <div class="add-member-container">
-              <button type="button" class="add-member-btn" data-target="member-2-section">
-                <span>+</span> Add Member 2
-              </button>
+            <div class="form-nav">
+              <button type="button" class="prev-step-btn">PREV</button>
+              <button type="button" class="next-step-btn">NEXT</button>
             </div>
           </div>
 
-          <!-- Member 2 -->
-          <div id="member-2-section" class="member-extra-section" style="display: none;">
+          <!-- Step 3: Member 2 -->
+          <div class="form-step" id="step-3">
             <h4 class="section-titl">MEMBER_2_DETAILS</h4>
             <div class="input-group">
               <label>FULL_NAME</label>
-              <input type="text" placeholder="Member 2 name">
+              <input type="text" placeholder="Member 2 name" name="m2_name">
             </div>
             <div class="input-group">
               <label>PHONE_NUMBER</label>
-              <input type="tel" placeholder="+91 XXXX XXXX XX">
+              <input type="tel" placeholder="+91 XXXX XXXX XX" name="m2_phone">
             </div>
             <div class="input-group">
               <label>EMAIL_ADDRESS</label>
-              <input type="email" placeholder="member2@example.com">
+              <input type="email" placeholder="member2@example.com" name="m2_email">
             </div>
             <div class="input-group">
               <label>COLLEGE_NAME</label>
-              <input type="text" placeholder="Institution Name">
+              <input type="text" placeholder="Institution Name" name="m2_college">
             </div>
             <div class="input-group">
               <label>DEPARTMENT</label>
-              <input type="text" placeholder="e.g. AI & DS">
+              <input type="text" placeholder="e.g. AI & DS" name="m2_dept">
             </div>
             <div class="input-group" style="margin-bottom: 2rem;">
               <label>YEAR</label>
-              <select>
+              <select name="m2_year">
                 <option value="" disabled selected>Select Year</option>
                 <option value="1">1st Year</option>
                 <option value="2">2nd Year</option>
@@ -517,68 +542,70 @@
                 <option value="4">4th Year</option>
               </select>
             </div>
-            <div class="add-member-container">
-              <button type="button" class="add-member-btn" data-target="member-3-section">
-                <span>+</span> Add Member 3
+            <div class="form-nav">
+              <button type="button" class="prev-step-btn">PREV</button>
+              <button type="button" class="next-step-btn">NEXT</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Member 3 & Credentials -->
+          <div class="form-step" id="step-4">
+            <h4 class="section-titl">MEMBER_3_DETAILS</h4>
+            <div class="input-group">
+              <label>FULL_NAME</label>
+              <input type="text" placeholder="Member 3 name" name="m3_name">
+            </div>
+            <div class="input-group">
+              <label>PHONE_NUMBER</label>
+              <input type="tel" placeholder="+91 XXXX XXXX XX" name="m3_phone">
+            </div>
+            <div class="input-group">
+              <label>EMAIL_ADDRESS</label>
+              <input type="email" placeholder="member3@example.com" name="m3_email">
+            </div>
+            <div class="input-group">
+              <label>COLLEGE_NAME</label>
+              <input type="text" placeholder="Institution Name" name="m3_college">
+            </div>
+            <div class="input-group">
+              <label>DEPARTMENT</label>
+              <input type="text" placeholder="e.g. AI & DS" name="m3_dept">
+            </div>
+            <div class="input-group" style="margin-bottom: 2rem;">
+              <label>YEAR</label>
+              <select name="m3_year">
+                <option value="" disabled selected>Select Year</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+                <option value="4">4th Year</option>
+              </select>
+            </div>
+
+            <h4 class="section-titl">CREDENTIALS</h4>
+            <div class="input-group">
+              <label>USERNAME</label>
+              <input type="text" id="username" readonly placeholder="Auto-generated">
+            </div>
+            <div class="input-group">
+              <label>PASSWORD</label>
+              <input type="password" id="password" required placeholder="********">
+            </div>
+            <div class="input-group">
+              <label>CONFIRM_PASSWORD</label>
+              <input type="password" id="confirm-password" required placeholder="********">
+              <small id="password-msg"
+                style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; display: block;"></small>
+            </div>
+
+            <div class="form-nav">
+              <button type="button" class="prev-step-btn">PREV</button>
+              <button type="submit" id="register-btn" class="auth-submit-btn font-zen" style="margin-top: 0;" disabled>
+                REGISTER
               </button>
             </div>
           </div>
 
-          <!-- Member 3 -->
-          <div id="member-3-section" class="member-extra-section" style="display: none;">
-            <h4 class="section-titl">MEMBER_3_DETAILS</h4>
-            <div class="input-group">
-              <label>FULL_NAME</label>
-              <input type="text" placeholder="Member 3 name">
-            </div>
-            <div class="input-group">
-              <label>PHONE_NUMBER</label>
-              <input type="tel" placeholder="+91 XXXX XXXX XX">
-            </div>
-            <div class="input-group">
-              <label>EMAIL_ADDRESS</label>
-              <input type="email" placeholder="member3@example.com">
-            </div>
-            <div class="input-group">
-              <label>COLLEGE_NAME</label>
-              <input type="text" placeholder="Institution Name">
-            </div>
-            <div class="input-group">
-              <label>DEPARTMENT</label>
-              <input type="text" placeholder="e.g. AI & DS">
-            </div>
-            <div class="input-group">
-              <label>YEAR</label>
-              <select>
-                <option value="" disabled selected>Select Year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Credentials -->
-          <h4 class="section-titl">CREDENTIALS</h4>
-          <div class="input-group">
-            <label>USERNAME</label>
-            <input type="text" id="username" readonly placeholder="Auto-generated">
-          </div>
-          <div class="input-group">
-            <label>PASSWORD</label>
-            <input type="password" id="password" required placeholder="********">
-          </div>
-          <div class="input-group">
-            <label>CONFIRM_PASSWORD</label>
-            <input type="password" id="confirm-password" required placeholder="********">
-            <small id="password-msg"
-              style="color: #ef4444; font-size: 0.75rem; margin-top: 0.25rem; display: block;"></small>
-          </div>
-
-          <button type="submit" id="register-btn" class="auth-submit-btn font-zen" disabled>
-            REGISTER
-          </button>
           <p style="margin-top: 1rem; text-align: center; font-size: 0.8rem; opacity: 0.6;">Already have an account? <a
               href="#" id="go-to-login" style="color: var(--p-400); text-decoration: none;">Login here</a></p>
         </form>
