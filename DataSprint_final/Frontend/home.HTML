@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DATA SPRINT 3.0 - Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="home-page">
+  <div id="letter-glitch"></div>
+
+
+  <div class="cursor-laser"></div>
+  <div class="scanline"></div>
+  <div id="notification-container"></div>
+
+  <nav>
+    <div class="container nav-content">
+      <div class="nav-left">
+        <a href="index.html" class="logo font-zen">
+          <div class="logo-box">D</div>
+          <div class="logo-text">DATA <span class="floating-version-sm">3.0</span>SPRINT</div>
+        </a>
+      </div>
+
+      <div class="nav-right" style="display: flex; align-items: center; gap: 2rem;">
+        <div class="profile-trigger font-zen" id="profile-btn">
+          <span class="profile-icon">👤</span>
+          <span class="profile-name" id="user-display-name">Profile</span>
+        </div>
+        <a href="https://ai.sairamit.edu.in/" target="_blank" class="college-logo">
+          <img src="image.png" alt="College Logo">
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero dashboard-hero">
+      <div class="hero-grid"></div>
+      <div class="container hero-content">
+        <h2 class="dashboard-title font-zen neon-text-purple">EVENT DASHBOARD</h2>
+
+        <!-- Countdown Timer -->
+        <div class="hero-timer-box font-zen">
+          <div class="countdown-row" id="hero-countdown-row">
+            <div class="time-block">
+              <div class="time-val" id="days-hero">00</div>
+              <div class="time-label">DAYS</div>
+            </div>
+            <div class="time-block">
+              <div class="time-val" id="hours-hero">00</div>
+              <div class="time-label">HOURS</div>
+            </div>
+            <div class="time-block">
+              <div class="time-val" id="minutes-hero">00</div>
+              <div class="time-label">MIN</div>
+            </div>
+            <div class="time-block">
+              <div class="time-val" id="seconds-hero">00</div>
+              <div class="time-label">SEC</div>
+            </div>
+          </div>
+
+          <!-- Loading Bar -->
+          <div class="loader-container" style="margin-top: 2rem;">
+            <div class="loader-bar">
+              <div class="loader-fill" id="loading-fill"></div>
+            </div>
+            <div class="loader-text">
+              LOADING EXPERIENCE... <span id="loading-pct">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Content Placeholder -->
+        <div class="dashboard-info font-zen reveal">
+          <p>Welcome to Data Sprint 3.0! Your team details are available in the profile section.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Profile Modal/Overlay -->
+  <div class="profile-overlay" id="profile-overlay">
+    <div class="profile-card font-zen">
+      <button class="close-profile" id="close-profile">&times;</button>
+      <h3 class="neon-text-purple">TEAM PROFILE</h3>
+
+      <div class="team-summary" id="team-summary-trigger">
+        <p>Team ID: <span class="highlight-green" id="display-team-id">---</span></p>
+        <p>Team Name: <span class="highlight-green" id="display-team-name">Loading...</span></p>
+        <span class="tap-hint">(Click to view/edit members)</span>
+      </div>
+
+      <div class="team-details-hidden" id="team-details-box">
+        <div class="member-list" id="profile-view-mode">
+          <div class="member-item">
+            <span class="member-role">LEAD:</span>
+            <span id="member-lead-name">...</span>
+          </div>
+          <div class="member-item">
+            <span class="member-role">LEAD_PHONE:</span>
+            <span id="member-lead-phone">...</span>
+          </div>
+          <div class="member-item">
+            <span class="member-role">MEMBER 1:</span>
+            <span id="member-1-name">...</span>
+          </div>
+          <div class="member-item">
+            <span class="member-role">MEMBER 2:</span>
+            <span id="member-2-name">...</span>
+          </div>
+          <div class="member-item">
+            <span class="member-role">MEMBER 3:</span>
+            <span id="member-3-name">...</span>
+          </div>
+        </div>
+
+        <div class="member-list-edit" id="profile-edit-mode" style="display: none;">
+          <div class="input-group-sm">
+            <label>LEAD_NAME</label>
+            <input type="text" id="edit-lead-name" class="profile-input">
+          </div>
+          <div class="input-group-sm">
+            <label>LEAD_PHONE</label>
+            <input type="tel" id="edit-lead-phone" class="profile-input">
+          </div>
+          <div class="input-group-sm">
+            <label>MEMBER_1_NAME</label>
+            <input type="text" id="edit-m1-name" class="profile-input">
+          </div>
+          <div class="input-group-sm">
+            <label>MEMBER_2_NAME</label>
+            <input type="text" id="edit-m2-name" class="profile-input">
+          </div>
+          <div class="input-group-sm">
+            <label>MEMBER_3_NAME</label>
+            <input type="text" id="edit-m3-name" class="profile-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Change Section (Hidden) -->
+      <div id="password-change-box"
+        style="display: none; border-top: 1px solid rgba(22, 163, 74, 0.2); margin-top: 1rem; padding-top: 1rem;">
+        <h4 style="color: var(--p-400); margin-bottom: 1rem;">CHANGE PASSWORD</h4>
+        <div class="input-group-sm">
+          <div id="pw-otp-request-box">
+            <button type="button" id="request-pw-otp-btn" class="btn-primary-sm">REQUEST_OTP</button>
+          </div>
+          <div id="pw-otp-verify-box" style="display: none;">
+            <input type="text" id="pw-otp-input" placeholder="6-DIGIT_OTP" class="profile-input"
+              style="margin-bottom: 0.5rem;">
+            <input type="password" id="new-pw-input" placeholder="NEW_PASSWORD" class="profile-input"
+              style="margin-bottom: 0.5rem;">
+            <button type="button" id="confirm-pw-change-btn" class="btn-primary-sm">UPDATE_PASSWORD</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-actions" style="margin-top: 2rem; display: flex; gap: 0.8rem; flex-wrap: wrap;">
+        <button class="btn-primary-sm" id="edit-profile-btn">EDIT_PROFILE</button>
+        <button class="btn-primary-sm" id="save-profile-btn"
+          style="display: none; background: var(--p-600);">SAVE_CHANGES</button>
+        <button class="btn-secondary-sm" id="pw-reset-btn">CHANGE_PASSWORD</button>
+        <a href="http://localhost:5000/api/users/export" id="export-db-btn" class="btn-primary-sm"
+          style="background: #166534; text-decoration: none; color: #fff; text-align: center; line-height: 1.2; display: none; align-items: center; padding: 0 1rem; font-size: 0.75rem;">DOWNLOAD_REPORT</a>
+        <button class="btn-danger-sm" id="logout-btn">LOGOUT</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .profile-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+    }
+
+    .profile-overlay.active {
+      display: flex;
+    }
+
+    .team-details-hidden {
+      display: none;
+      margin-top: 1rem;
+      width: 100%;
+    }
+
+    .team-details-hidden.visible {
+      display: block;
+    }
+
+    .highlight-green {
+      color: var(--p-400);
+    }
+
+    .tap-hint {
+      font-size: 0.7rem;
+      opacity: 0.5;
+      display: block;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+
+    .close-profile {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .profile-card {
+      background: #0a0a0a;
+      border: 1px solid var(--p-600);
+      padding: 2.5rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .member-item {
+      margin-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .input-group-sm {
+      margin-bottom: 1rem;
+    }
+
+    .input-group-sm label {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--p-400);
+      margin-bottom: 0.3rem;
+    }
+
+    .profile-input {
+      width: 100%;
+      background: #000;
+      border: 1px solid rgba(22, 163, 74, 0.3);
+      color: #fff;
+      padding: 0.6rem;
+      font-family: inherit;
+      border-radius: 4px;
+    }
+
+    .profile-input:focus {
+      outline: none;
+      border-color: var(--p-400);
+    }
+
+    .btn-primary-sm {
+      background: var(--p-500);
+      border: none;
+      color: #000;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .btn-secondary-sm {
+      background: transparent;
+      border: 1px solid var(--p-500);
+      color: var(--p-500);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+
+    .btn-danger-sm {
+      background: transparent;
+      border: 1px solid #ef4444;
+      color: #ef4444;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger-sm:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+  </style>
+  <script src="home.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
