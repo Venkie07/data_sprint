@@ -193,6 +193,101 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Reuse background glitch logic from script.js if needed or keep it simple.
-    // For now, let's just make it functional.
+    // --- Countdown Timer & Loading Bar ---
+    const targetDate = new Date('February 12, 2026 00:00:00').getTime();
+    const startDate = new Date('February 1, 2026 00:00:00').getTime();
+    const totalDuration = targetDate - startDate;
+
+    const updateCountdown = () => {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+        const elapsed = now - startDate;
+
+        if (distance < 0) {
+            clearInterval(timerInterval);
+            const pct = document.getElementById('loading-pct');
+            const fill = document.getElementById('loading-fill');
+            if (pct) pct.innerText = '100%';
+            if (fill) fill.style.width = '100%';
+            return;
+        }
+
+        // Percentage Calculation
+        const percentage = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+        const pctEl = document.getElementById('loading-pct');
+        const fillEl = document.getElementById('loading-fill');
+        if (pctEl) pctEl.innerText = `${percentage.toFixed(1)}%`;
+        if (fillEl) fillEl.style.width = `${percentage}%`;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Update Hero Elements
+        const setTime = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val.toString().padStart(2, '0');
+        };
+
+        setTime('days-hero', days);
+        setTime('hours-hero', hours);
+        setTime('minutes-hero', minutes);
+        setTime('seconds-hero', seconds);
+    };
+
+    const timerInterval = setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // --- Cursor Tracking ---
+    const cursor = document.querySelector('.cursor-laser');
+    if (cursor) {
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        document.addEventListener('mousedown', () => cursor.classList.add('clicking'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('clicking'));
+    }
+
+    // --- Background Glitch Logic ---
+    const glitchContainer = document.getElementById('letter-glitch');
+    if (glitchContainer) {
+        const canvas = document.createElement('canvas');
+        glitchContainer.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        const resize = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        };
+        window.addEventListener('resize', resize);
+        resize();
+
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>[]{}/\\|';
+        const fontSize = 14;
+        const columns = Math.floor(width / fontSize);
+        const drops = new Array(columns).fill(1).map(() => Math.random() * height / fontSize);
+
+        const draw = () => {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = '#16a34a';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i] += 0.5;
+            }
+            requestAnimationFrame(draw);
+        };
+        draw();
+    }
 });

@@ -171,13 +171,78 @@ document.addEventListener('DOMContentLoaded', () => {
     const requestOtpBtn = document.getElementById('request-otp-btn');
     const otpSection = document.getElementById('otp-section');
     if (requestOtpBtn && otpSection) {
-        requestOtpBtn.addEventListener('click', () => {
-            const userId = document.getElementById('forgot-userid').value;
-            if (userId.trim() !== '') {
-                otpSection.style.display = 'block';
-                requestOtpBtn.style.display = 'none';
+        requestOtpBtn.addEventListener('click', async () => {
+            const username = document.getElementById('forgot-userid').value;
+            if (username.trim() !== '') {
+                try {
+                    requestOtpBtn.disabled = true;
+                    requestOtpBtn.innerText = 'REQUESTING...';
+
+                    const response = await fetch(`${API_URL}/auth/forgot-password`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        otpSection.style.display = 'block';
+                        requestOtpBtn.style.display = 'none';
+                        showNotification('Security code sent to your email.');
+                    } else {
+                        showNotification(data.message || 'Verification request failed', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Connection error.', 'error');
+                } finally {
+                    requestOtpBtn.disabled = false;
+                    requestOtpBtn.innerText = 'REQUEST OTP';
+                }
             } else {
                 showNotification('Please enter your User ID first.', 'warning');
+            }
+        });
+    }
+
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('forgot-userid').value;
+            const otp = document.getElementById('forgot-otp').value;
+            const newPassword = document.getElementById('forgot-new-password').value;
+
+            if (otp.length !== 6 || newPassword.length < 6) {
+                return showNotification('Invalid OTP or Password (min 6 chars)', 'warning');
+            }
+
+            try {
+                const submitBtn = forgotPasswordForm.querySelector('button[type="submit"]');
+                submitBtn.innerText = 'RESETTING...';
+                submitBtn.disabled = true;
+
+                const response = await fetch(`${API_URL}/auth/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, otp, newPassword })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Password updated! You can now login.', 'success');
+                    setTimeout(() => {
+                        openModal('login');
+                    }, 2000);
+                } else {
+                    showNotification(data.message || 'Reset failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Network error.', 'error');
+            } finally {
+                const submitBtn = forgotPasswordForm.querySelector('button[type="submit"]');
+                submitBtn.innerText = 'RESET PASSWORD';
+                submitBtn.disabled = false;
             }
         });
     }
