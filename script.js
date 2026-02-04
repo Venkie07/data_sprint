@@ -424,7 +424,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Scroll Reveal Intersection Observer
     const revealCallback = (entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -443,7 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     console.log('DATA SPRINT 3.0 Initialized');
 
-    // --- Letter Glitch Background Logic ---
     const glitchContainer = document.getElementById("letter-glitch");
     if (glitchContainer) {
         const glitchConfig = {
@@ -572,7 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gAnimate();
     }
 
-    // --- Go Up Button Logic ---
     const goUpBtn = document.getElementById('go-up-btn');
     if (goUpBtn) {
         window.addEventListener('scroll', () => {
@@ -588,7 +585,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Hero Action Buttons ---
     const exploreBtn = document.getElementById('explore-btn');
     const registerHeroBtn = document.getElementById('register-hero-btn');
 
@@ -604,5 +600,40 @@ document.addEventListener('DOMContentLoaded', () => {
             openModal('register');
         });
     }
+
+     const observerOptions = {
+                threshold: 0.2
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            timelineItems.forEach(item => {
+                observer.observe(item);
+            });
+
+            const wrapper = document.getElementById('timeline-wrapper');
+            const progress = document.getElementById('timeline-progress');
+
+            window.addEventListener('scroll', () => {
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const windowHeight = window.innerHeight;
+
+
+                const start = windowHeight * 0.8; 
+                const end = windowHeight * 0.2;   
+
+                let scrollProgress = (windowHeight - wrapperRect.top) / (wrapperRect.height + windowHeight * 0.4);
+
+                scrollProgress = Math.max(0, Math.min(1, scrollProgress));
+
+                progress.style.height = (scrollProgress * 100) + '%';
+            });
 });
 
