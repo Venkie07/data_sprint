@@ -2319,3 +2319,33 @@ footer {
 .profile-actions button {
     width: 100%;
 }
+
+.btn-secondary-sm {
+    background: transparent;
+    color: var(--p-400);
+    border: 1px solid var(--border-purple);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.btn-secondary-sm:hover {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: var(--p-400);
+}
+
+.input-group-sm label {
+    display: block;
+    font-size: 0.6rem;
+    color: var(--p-600);
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+#pw-otp-msg {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+}
