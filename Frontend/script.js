@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const API_URL = 'http://localhost:5000/api';
     // --- Custom Notification System ---
     const showNotification = (message, type = 'info') => {
         const container = document.getElementById('notification-container');
@@ -236,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // OTP Simulation Logic
+    // OTP Logic Integration
     const sendOtpBtn = document.getElementById('send-otp-btn');
     const verifyOtpBtn = document.getElementById('verify-otp-btn');
     const otpVerifyBox = document.getElementById('otp-verify-box');
@@ -245,13 +246,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextToStep2Btn = document.getElementById('to-step-2');
 
     if (sendOtpBtn) {
-        sendOtpBtn.addEventListener('click', () => {
+        sendOtpBtn.addEventListener('click', async () => {
             const email = document.getElementById('lead-email').value;
             if (email.includes('@')) {
-                otpVerifyBox.style.display = 'block';
-                sendOtpBtn.innerText = 'RESEND OTP';
-                otpMsg.innerText = 'OTP sent to ' + email;
-                otpMsg.style.color = 'var(--p-400)';
+                try {
+                    sendOtpBtn.disabled = true;
+                    sendOtpBtn.innerText = 'SENDING...';
+
+                    const response = await fetch(`${API_URL}/auth/send-otp`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        otpVerifyBox.style.display = 'block';
+                        sendOtpBtn.innerText = 'RESEND OTP';
+                        otpMsg.innerText = 'OTP sent to ' + email;
+                        otpMsg.style.color = 'var(--p-400)';
+                        showNotification('Verification code sent to your email.');
+                    } else {
+                        showNotification(data.message || 'Failed to send OTP', 'error');
+                        sendOtpBtn.innerText = 'VERIFY';
+                    }
+                } catch (error) {
+                    showNotification('Network error. Check if server is running.', 'error');
+                    sendOtpBtn.innerText = 'VERIFY';
+                } finally {
+                    sendOtpBtn.disabled = false;
+                }
             } else {
                 showNotification('Please enter a valid email address.', 'warning');
             }
@@ -259,18 +284,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (verifyOtpBtn) {
-        verifyOtpBtn.addEventListener('click', () => {
-            const code = otpInput.value;
-            if (code === '123456') { // Static simulation
-                otpMsg.innerText = 'Email Verified Successfully!';
-                otpMsg.style.color = '#4ade80';
+        verifyOtpBtn.addEventListener('click', async () => {
+            const email = document.getElementById('lead-email').value;
+            const otp = otpInput.value;
+
+            if (otp.length !== 6) return showNotification('Enter 6-digit OTP', 'warning');
+
+            try {
                 verifyOtpBtn.disabled = true;
-                otpInput.disabled = true;
-                nextToStep2Btn.disabled = false;
-                sendOtpBtn.style.display = 'none';
-            } else {
-                otpMsg.innerText = 'Invalid OTP.';
-                otpMsg.style.color = '#ef4444';
+                verifyOtpBtn.innerText = 'VERIFYING...';
+
+                const response = await fetch(`${API_URL}/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    otpMsg.innerText = 'Email Verified Successfully!';
+                    otpMsg.style.color = '#4ade80';
+                    verifyOtpBtn.disabled = true;
+                    otpInput.disabled = true;
+                    nextToStep2Btn.disabled = false;
+                    sendOtpBtn.style.display = 'none';
+                    showNotification('Email verified! You can proceed.');
+                } else {
+                    otpMsg.innerText = data.message || 'Invalid OTP.';
+                    otpMsg.style.color = '#ef4444';
+                }
+            } catch (error) {
+                showNotification('Verification failed. Try again.', 'error');
+            } finally {
+                verifyOtpBtn.disabled = false;
+                if (!verifyOtpBtn.disabled) verifyOtpBtn.innerText = 'VERIFY OTP';
             }
         });
     }
@@ -348,6 +396,127 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (e) => {
         if (e.target === modal) hideModal();
     });
+
+    // --- Auth API Integration ---
+
+    const authForm = document.getElementById('auth-form');
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const usernameInput = authForm.querySelector('input[type="text"]');
+            const passwordInput = authForm.querySelector('input[type="password"]');
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            try {
+                const submitBtn = authForm.querySelector('.auth-submit-btn');
+                const originalText = submitBtn.innerText;
+                submitBtn.innerText = 'AUTHENTICATING...';
+                submitBtn.disabled = true;
+
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    showNotification('Login successful! Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'home.HTML';
+                    }, 1000);
+                } else {
+                    showNotification(data.message || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Connection error. Is the backend server running?', 'error');
+            } finally {
+                const submitBtn = authForm.querySelector('.auth-submit-btn');
+                submitBtn.innerText = 'INITIATE SESSION';
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
+    const registrationForm = document.getElementById('register-form');
+    if (registrationForm) {
+        registrationForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(registrationForm);
+            const rawData = Object.fromEntries(formData.entries());
+
+            // Map and prepare data for backend
+            const payload = {
+                teamName: rawData.team_name,
+                name: rawData.lead_name,
+                email: rawData.lead_email,
+                phone: rawData.lead_phone,
+                college: rawData.lead_college,
+                dept: rawData.lead_dept,
+                year: rawData.lead_year,
+
+                m1Name: rawData.m1_name || '---',
+                m1Phone: rawData.m1_phone || '---',
+                m1Email: rawData.m1_email || '---',
+                m1College: rawData.m1_college || '---',
+                m1Dept: rawData.m1_dept || '---',
+                m1Year: rawData.m1_year || '---',
+
+                m2Name: rawData.m2_name || '---',
+                m2Phone: rawData.m2_phone || '---',
+                m2Email: rawData.m2_email || '---',
+                m2College: rawData.m2_college || '---',
+                m2Dept: rawData.m2_dept || '---',
+                m2Year: rawData.m2_year || '---',
+
+                m3Name: rawData.m3_name || '---',
+                m3Phone: rawData.m3_phone || '---',
+                m3Email: rawData.m3_email || '---',
+                m3College: rawData.m3_college || '---',
+                m3Dept: rawData.m3_dept || '---',
+                m3Year: rawData.m3_year || '---',
+
+                username: document.getElementById('username').value,
+                password: password.value
+            };
+
+            try {
+                const registerFormBtn = document.getElementById('register-btn');
+                registerFormBtn.innerText = 'INITIALIZING...';
+                registerFormBtn.disabled = true;
+
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('Registration successful!', 'success');
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    setTimeout(() => {
+                        window.location.href = 'home.HTML';
+                    }, 1500);
+                } else {
+                    showNotification(data.message || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showNotification('Error connecting to server.', 'error');
+            } finally {
+                const registerFormBtn = document.getElementById('register-btn');
+                registerFormBtn.innerText = 'REGISTER';
+                registerFormBtn.disabled = false;
+            }
+        });
+    }
 
     // Navigation Smooth Scroll Fix for Snap
     const navLinks = document.querySelector('.nav-links');

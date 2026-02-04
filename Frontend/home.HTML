@@ -115,13 +115,42 @@
         </div>
       </div>
 
+      <!-- Password Change Section (Added) -->
+      <div class="password-change-section"
+        style="margin-top: 1.5rem; border-top: 1px solid var(--border-purple); padding-top: 1rem;">
+        <button class="btn-secondary-sm" id="show-pw-change-btn"
+          style="width: 100%; margin-bottom: 0.5rem; font-size: 0.8rem;">RE-AUTHENTICATE (CHANGE PASSWORD)</button>
+
+        <div id="pw-change-box" style="display: none; margin-top: 1rem;">
+          <div class="input-group-sm" id="pw-otp-request">
+            <button class="verify-btn" id="request-pw-otp-btn" style="width: 100%;">REQUEST SECURITY OTP</button>
+            <small id="pw-otp-msg" style="display: block; margin-top: 0.5rem; font-size: 0.7rem;"></small>
+          </div>
+
+          <div id="pw-otp-verify-box" style="display: none; margin-top: 1rem;">
+            <div class="input-group-sm">
+              <label>ENTER OTP</label>
+              <input type="text" id="pw-otp-input" maxlength="6" placeholder="XXXXXX"
+                style="width: 100%; background: #000; border: 1px solid var(--p-600); color: #fff; padding: 5px;">
+            </div>
+            <div class="input-group-sm" style="margin-top: 0.5rem;">
+              <label>NEW PASSWORD</label>
+              <input type="password" id="new-password-input" placeholder="********"
+                style="width: 100%; background: #000; border: 1px solid var(--p-600); color: #fff; padding: 5px;">
+            </div>
+            <button class="verify-btn" id="confirm-pw-change-btn" style="width: 100%; margin-top: 1rem;">UPDATE
+              PASSWORD</button>
+          </div>
+        </div>
+      </div>
+
       <div class="profile-actions">
         <button class="btn-secondary" id="logout-btn">LOGOUT</button>
       </div>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="home.js"></script>
 </body>
 
 </html>
